@@ -1,61 +1,32 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
-type champion struct {
-	ID             string `json:"id"`
-	Name           string `json:"name"`
-	Role           string `json:"role"`
-	Region         string `json:"region"`
-	Ready_To_Fight bool   `json:"ready_to_fight"`
-}
-
-var champions = []champion{
-	{ID: "1", Name: "clog", Role: "assassin", Region: "aurelia", Ready_To_Fight: false},
-	{ID: "2", Name: "jimbi", Role: "tank", Region: "eldoria", Ready_To_Fight: true},
-}
-
-// get reqeust
-func getChampion(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, champions)
-}
-
-// post reqeust
-func addChampion(c *gin.Context) {
-	var newChampion champion
-
-	// new champion
-	if err := c.BindJSON(&newChampion); err != nil {
-		return
-	}
-
-	champions = append(champions, newChampion)
-	c.IndentedJSON(http.StatusCreated, newChampion)
-}
-
-// get reqeust by id
-func getChampionID(c *gin.Context) {
-	id := c.Param("id")
-
-	// champion by id
-	for _, a := range champions {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
-	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "champion not found"})
+// handler
+func basicHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello, world!"))
 }
 
 func main() {
-	router := gin.Default()
-	router.GET("/champions", getChampion)
-	router.GET("/champions/:id", getChampionID)
-	router.POST("/champions", addChampion)
+	// router
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
-	router.Run("localhost:7070")
+	r.Get("/welcome", basicHandler)
+
+	// http server
+	s := &http.Server{
+		Addr:    ":7070",
+		Handler: r,
+	}
+	err := s.ListenAndServe()
+	if err != nil {
+		fmt.Println("failed to listen to server", err)
+	}
 }
