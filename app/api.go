@@ -16,6 +16,17 @@ func loadRoutes() *chi.Mux {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	router.Get("/regist", register.Regist())
+
+	router.Route("/registration", loadRegisterRoutes)
+
 	return router
+
+}
+func loadRegisterRoutes(router chi.Router) {
+	register := &register.Registration{}
+	router.Post("/", register.Create)
+	router.Get("/", register.List)
+	router.Get("/{id}", register.GetByID)
+	router.Put("/{id}", register.UpdateByID)
+	router.Delete("/{id}", register.DeleteByID)
 }
